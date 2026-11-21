@@ -141,7 +141,7 @@ if run_agent:
                     temperature=0.2
                 )
                 
-                chat = client.chats.create(model="gemini-2.5-flash", config=config)
+                chat = client.chats.create(model="gemini-3.8-flash", config=config)
                 response = chat.send_message(prompt_usuario)
                 
                 log_logs = []
