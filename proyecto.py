@@ -160,7 +160,7 @@ if run_agent:
                     top_fila = st.session_state["tabla_criticos"].sort_values(by="Monto_Partida_USD", ascending=False).iloc[0]
                     res_rfi = generar_solicitud_aclaratoria_tecnica(top_fila["Clausula_ID"], top_fila["Disciplina_Norma"])
                     
-                                       log_logs = [
+                    log_logs = [
                         ("Paso 1 · Escaneo Normativo", "Se auditaron 120 cláusulas técnicas cruzando estándares ASME, API, ISA e ISO bajo umbral de criticidad 75/100."),
                         ("Paso 2 · Cuantificación de Riesgo", f"Se detectaron {res_auditoria['brechas_criticas_detectadas']} brechas críticas con una exposición financiera total de ${res_auditoria['presupuesto_expuesto_a_penalidad_usd']:,.2f} USD."),
                         ("Paso 3 · Bloqueo Preventivo (RFI)", f"Se generó automáticamente solicitud de aclaratoria técnica para la partida {top_fila['Clausula_ID']} ({top_fila['Disciplina_Norma']}) y se bloqueó el envío de la oferta.")
