@@ -21,16 +21,6 @@ st.markdown("""
     <style>
     .main-title { font-size: 28px; font-weight: bold; color: #0F172A; }
     .sub-title { font-size: 16px; color: #475569; margin-bottom: 20px; }
-    .agent-log { 
-        background-color: #0F172A; 
-        color: #38BDF8; 
-        padding: 12px 15px; 
-        border-left: 4px solid #F59E0B;
-        border-radius: 6px; 
-        font-family: monospace; 
-        font-size: 13px; 
-        margin-bottom: 8px;
-    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -141,10 +131,10 @@ if run_agent:
                         for function_call in response.function_calls:
                             nombre_fn = function_call.name
                             args_fn = function_call.args
-                            log_logs.append(f"🛠️ [DECISIÓN DEL AGENTE] Invocando herramienta: `{nombre_fn}` | Parámetros: {args_fn}")
+                            log_logs.append(("Herramienta Ejecutada", f"El agente invocó `{nombre_fn}` con parámetros {args_fn}."))
                             
                             resultado_fn = herramientas_disponibles[nombre_fn](**args_fn)
-                            log_logs.append(f"👁️ [OBSERVACIÓN TÉCNICA] Datos extraídos: {resultado_fn}")
+                            log_logs.append(("Resultado Técnico", f"Datos procesados exitosamente: {resultado_fn}"))
                             
                             response = chat.send_message(
                                 types.Part.from_function_response(
@@ -157,7 +147,7 @@ if run_agent:
                 except Exception:
                     time.sleep(1.5)
                     res_auditoria = auditar_pliego_licitacion(num_clausulas=120, umbral_riesgo_tecnico=75)
-                    top_fila = st.session_state["tabla_criticos"].sort_values(by="Monto_Partida_USD", ascending=False).iloc[0]
+                    top_fila = st.session_state["tabla_criticos"].sort_values(by="Monto_Partida_USD", ascending=False).to_dict(orient="records").pop(0)
                     res_rfi = generar_solicitud_aclaratoria_tecnica(top_fila["Clausula_ID"], top_fila["Disciplina_Norma"])
                     
                     log_logs = [
@@ -166,7 +156,7 @@ if run_agent:
                         ("Paso 3 · Bloqueo Preventivo (RFI)", f"Se generó automáticamente solicitud de aclaratoria técnica para la partida {top_fila['Clausula_ID']} ({top_fila['Disciplina_Norma']}) y se bloqueó el envío de la oferta.")
                     ]
                     
-                    top_norma = st.session_state["riesgo_disciplina"].iloc
+                    top_norma = st.session_state["riesgo_disciplina"].to_dict(orient="records").pop(0)
                     dictamen_final = f"""
 1. **Resumen de Exposición Contractual:** Se auditaron **120 cláusulas técnicas** bajo umbral de criticidad `75/100`, identificando **{res_auditoria['brechas_criticas_detectadas']} brechas normativas críticas** que comprometen un capital total de **${res_auditoria['presupuesto_expuesto_a_penalidad_usd']:,.2f} USD**.
 2. **Disciplina de Mayor Impacto Financiero:** La mayor concentración de riesgo recae en **{top_norma['Disciplina_Norma']}**, acumulando **${top_norma['Monto_Partida_USD']:,.2f} USD** en partidas con desviaciones técnicas.
@@ -210,7 +200,8 @@ if run_agent:
                 with st.expander("🔍 Ver Bitácora de Decisiones Autónomas del Agente (3 Pasos)", expanded=False):
                     for paso in log_logs:
                         if isinstance(paso, tuple):
-                            st.success(f"**{paso}:** {paso}")
+                            titulo, detalle = paso
+                            st.success(f"**{titulo}:** {detalle}")
                         else:
                             st.info(paso)
 
