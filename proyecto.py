@@ -141,8 +141,23 @@ if run_agent:
                     temperature=0.2
                 )
                 
-                chat = client.chats.create(model="gemini-3.8-flash", config=config)
-                response = chat.send_message(prompt_usuario)
+                # Sistema de respaldo automático anti-saturación (503) para demos en vivo
+                modelos_respaldo = ["gemini-3.8-flash", "gemini-3.8-flash-lite", "gemini-3.5-flash"]
+                chat = None
+                response = None
+                
+                for modelo in modelos_respaldo:
+                    try:
+                        chat = client.chats.create(model=modelo, config=config)
+                        response = chat.send_message(prompt_usuario)
+                        break  # Si responde bien, sale del bucle y sigue normal
+                    except Exception as err_modelo:
+                        if "503" in str(err_modelo) or "UNAVAILABLE" in str(err_modelo):
+                            continue  # Prueba inmediatamente el siguiente modelo
+                        raise err_modelo
+                
+                if response is None:
+                    raise Exception("Todos los servidores de respaldo están temporalmente ocupados. Intenta en unos segundos.")
                 
                 log_logs = []
                 
