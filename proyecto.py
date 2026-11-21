@@ -152,7 +152,7 @@ if run_agent:
                 )
                 
                 # Sistema de respaldo automático anti-saturación para demos en vivo
-                modelos_respaldo = ["gemini-3.8-flash", "gemini-4-hydrogen", "gemini-3.5-flash-lite"]
+                modelos_respaldo = ["gemini-4-hydrogen", "gemini-3.5-flash-lite", "gemini-3.8-flash"]
                 chat = None
                 response = None
                 
