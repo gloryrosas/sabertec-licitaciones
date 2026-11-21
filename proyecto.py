@@ -181,7 +181,7 @@ if run_agent:
                             data=st.session_state["riesgo_disciplina"],
                             x="Disciplina_Norma",
                             y="Monto_Partida_USD",
-                            color="#F59E0B",
+                            color="Disciplina_Norma",
                             horizontal=True
                         )
                     with tab_col:
@@ -196,7 +196,7 @@ if run_agent:
 
                 st.subheader("📋 Dictamen Ejecutivo de Licitación")
                 st.markdown(dictamen_final)
-
+                st.warning("⚖️ **Gobernanza y Criterio Técnico (Human-in-the-Loop):** Este dictamen y el bloqueo preventivo de oferta constituyen una recomendación asistida por Inteligencia Artificial basada en el cruce normativo automatizado. La validación final de las aclaratorias (RFI), la aceptación de riesgos contractuales y la autorización de envío comercial corresponden exclusivamente al **Comité de Licitaciones y a la Gerencia de Ingeniería**.")
                 with st.expander("🔍 Ver Bitácora de Decisiones Autónomas del Agente (3 Pasos)", expanded=False):
                     for paso in log_logs:
                         if isinstance(paso, tuple):
