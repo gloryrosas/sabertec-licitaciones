@@ -203,4 +203,39 @@ if run_agent:
                 st.divider()
 
                 # 2. Gráfico Gerencial de Exposición Financiera + Tabla Crítica
-                if "riesgo_disciplina" in st.session_state and not st.session_state["riesgo_disciplina"].empty:
+               if "riesgo_disciplina" in st.session_state and not st.session_state["riesgo_disciplina"].empty:
+                    st.subheader("📊 Exposición Financiera por Disciplina y Norma (USD)")
+                    st.caption("Concentración de capital en partidas con brechas normativas críticas que requieren aclaratoria (RFI) antes de ofertar.")
+                    
+                    graf_col, tab_col = st.columns([1.2, 1])
+                    with graf_col:
+                        st.bar_chart(
+                            data=st.session_state["riesgo_disciplina"],
+                            x="Disciplina_Norma",
+                            y="Monto_Partida_USD",
+                            color="#F59E0B",
+                            horizontal=True
+                        )
+                    with tab_col:
+                        st.markdown("**🚨 Top Partidas Críticas de Mayor Impacto**")
+                            st.dataframe(
+                                st.session_state["tabla_criticos"].sort_values(by="Monto_Partida_USD", ascending=False).head(6),
+                                use_container_width=True,
+                                hide_index=True
+                            )
+    
+                    st.divider()
+    
+                    # 3. Traza de Razonamiento y Dictamen Ejecutivo
+                    st.subheader("🧠 Traza de Razonamiento y Ejecución del Agente")
+                    for log in log_logs:
+                        st.markdown(f'<div class="agent-log">{log}</div>', unsafe_allow_html=True)
+    
+                    st.subheader("📋 Dictamen Ejecutivo de Licitación")
+                    st.markdown(response.text)
+    
+                except Exception as e:
+                    st.error(f"❌ Error durante la ejecución del agente: {e}")
+    else:
+        st.info("👈 Haz clic en **'🚀 Ejecutar Auditoría Agéntica'** en el panel izquierdo para iniciar el análisis autónomo del pliego.")
+     
