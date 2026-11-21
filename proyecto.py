@@ -218,10 +218,10 @@ if run_agent:
                         )
                     with tab_col:
                         st.markdown("**🚨 Top Partidas Críticas de Mayor Impacto**")
-                            st.dataframe(
-                                st.session_state["tabla_criticos"].sort_values(by="Monto_Partida_USD", ascending=False).head(6),
-                                use_container_width=True,
-                                hide_index=True
+                        st.dataframe(
+                        st.session_state["tabla_criticos"].sort_values(by="Monto_Partida_USD", ascending=False).head(6),
+                            use_container_width=True,
+                            hide_index=True
                             )
     
                     st.divider()
