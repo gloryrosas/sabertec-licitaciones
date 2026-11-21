@@ -190,7 +190,7 @@ if run_agent:
 else:
     st.info("👈 Haz clic en **'Ejecutar Auditoría Agéntica'** en el panel izquierdo para iniciar el análisis autónomo del pliego.")
                 col1, col2, col3 = st.columns(3)
-                col1.metric("Cláusulas Auditadas", "120 Ítems", "100% Pliego Procesado")
+                col1.metric("Cláusulas Auditadas", "120 Ítems", "100%, Pliego Procesado")
                 col2.metric("Normativas Cruzadas", "API / ASME / ISO", "Cumplimiento Verificado")
                 col3.metric("Estado del Agente", "RFI Emitido", "Oferta Bloqueada")
 
