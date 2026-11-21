@@ -234,8 +234,8 @@ if run_agent:
                     st.subheader("📋 Dictamen Ejecutivo de Licitación")
                     st.markdown(response.text)
     
-                    except Exception as e:
-                        st.error(f"❌ Error durante la ejecución del agente: {e}")
-    else:
-        st.info("👈 Haz clic en **'🚀 Ejecutar Auditoría Agéntica'** en el panel izquierdo para iniciar el análisis autónomo del pliego.")
+            except Exception as e:
+                st.error(f"❌ Error durante la ejecución del agente: {e}")
+else:
+    st.info("👈 Haz clic en **'🚀 Ejecutar Auditoría Agéntica'** en el panel izquierdo para iniciar el análisis autónomo del pliego.")
      
