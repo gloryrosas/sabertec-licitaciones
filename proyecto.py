@@ -160,17 +160,14 @@ if run_agent:
                     top_fila = st.session_state["tabla_criticos"].sort_values(by="Monto_Partida_USD", ascending=False).iloc[0]
                     res_rfi = generar_solicitud_aclaratoria_tecnica(top_fila["Clausula_ID"], top_fila["Disciplina_Norma"])
                     
-                    log_logs = [
-                        "🛠️ [DECISIÓN DEL AGENTE] Invocando herramienta: `auditar_pliego_licitacion` | Parámetros: {'num_clausulas': 120, 'umbral_riesgo_tecnico': 75}",
-                        f"👁️ [OBSERVACIÓN TÉCNICA] {res_auditoria['brechas_criticas_detectadas']} brechas críticas detectadas (${res_auditoria['presupuesto_expuesto_a_penalidad_usd']:,.2f} USD expuestos).",
-                        f"🛠️ [DECISIÓN DEL AGENTE] Invocando herramienta: `generar_solicitud_aclaratoria_tecnica` | Parámetros: {{'clausula_id': '{top_fila['Clausula_ID']}', 'norma_afectada': '{top_fila['Disciplina_Norma']}'}}",
-                        f"👁️ [OBSERVACIÓN TÉCNICA] {res_rfi['mensaje']}"
+                                       log_logs = [
+                        ("Paso 1 · Escaneo Normativo", "Se auditaron 120 cláusulas técnicas cruzando estándares ASME, API, ISA e ISO bajo umbral de criticidad 75/100."),
+                        ("Paso 2 · Cuantificación de Riesgo", f"Se detectaron {res_auditoria['brechas_criticas_detectadas']} brechas críticas con una exposición financiera total de ${res_auditoria['presupuesto_expuesto_a_penalidad_usd']:,.2f} USD."),
+                        ("Paso 3 · Bloqueo Preventivo (RFI)", f"Se generó automáticamente solicitud de aclaratoria técnica para la partida {top_fila['Clausula_ID']} ({top_fila['Disciplina_Norma']}) y se bloqueó el envío de la oferta.")
                     ]
                     
-                    top_norma = st.session_state["riesgo_disciplina"].iloc[0]
+                    top_norma = st.session_state["riesgo_disciplina"].iloc
                     dictamen_final = f"""
-### 📋 Dictamen Técnico Ejecutivo — Comité de Licitaciones Sabertec AI
-
 1. **Resumen de Exposición Contractual:** Se auditaron **120 cláusulas técnicas** bajo umbral de criticidad `75/100`, identificando **{res_auditoria['brechas_criticas_detectadas']} brechas normativas críticas** que comprometen un capital total de **${res_auditoria['presupuesto_expuesto_a_penalidad_usd']:,.2f} USD**.
 2. **Disciplina de Mayor Impacto Financiero:** La mayor concentración de riesgo recae en **{top_norma['Disciplina_Norma']}**, acumulando **${top_norma['Monto_Partida_USD']:,.2f} USD** en partidas con desviaciones técnicas.
 3. **Acción Preventiva Ejecutada (Bloqueo de Oferta):** Se emitió automáticamente la Solicitud de Aclaratoria Técnica (**RFI**) para la partida crítica **{top_fila['Clausula_ID']}** (*{top_fila['Disciplina_Norma']}*, índice de riesgo `{top_fila['Indice_Riesgo']}/100`), bloqueando el envío comercial hasta recibir respuesta formal del cliente licitante.
@@ -207,12 +204,15 @@ if run_agent:
 
                 st.divider()
 
-                st.subheader("🧠 Traza de Razonamiento y Ejecución del Agente")
-                for log in log_logs:
-                    st.markdown(f'<div class="agent-log">{log}</div>', unsafe_allow_html=True)
-
                 st.subheader("📋 Dictamen Ejecutivo de Licitación")
                 st.markdown(dictamen_final)
+
+                with st.expander("🔍 Ver Bitácora de Decisiones Autónomas del Agente (3 Pasos)", expanded=False):
+                    for paso in log_logs:
+                        if isinstance(paso, tuple):
+                            st.success(f"**{paso}:** {paso}")
+                        else:
+                            st.info(paso)
 
             except Exception as e:
                 st.error(f"❌ Error durante la ejecución del agente: {e}")
