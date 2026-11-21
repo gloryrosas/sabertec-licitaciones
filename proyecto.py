@@ -203,7 +203,7 @@ if run_agent:
                 st.divider()
 
                 # 2. Gráfico Gerencial de Exposición Financiera + Tabla Crítica
-               if "riesgo_disciplina" in st.session_state and not st.session_state["riesgo_disciplina"].empty:
+                if "riesgo_disciplina" in st.session_state and not st.session_state["riesgo_disciplina"].empty:
                     st.subheader("📊 Exposición Financiera por Disciplina y Norma (USD)")
                     st.caption("Concentración de capital en partidas con brechas normativas críticas que requieren aclaratoria (RFI) antes de ofertar.")
                     
