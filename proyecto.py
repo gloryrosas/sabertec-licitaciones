@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import os
 
-# Importación segura de la API oficial de Google GenAI
 try:
     from google import genai
     from google.genai import types
@@ -20,8 +19,8 @@ st.set_page_config(
 # Estilos visuales de alto impacto (Modo Industrial / Ingeniería)
 st.markdown("""
     <style>
-    .main-title { font-size: 28px; font-weight: bold; color: #F8FAFC; }
-    .sub-title { font-size: 16px; color: #94A3B8; margin-bottom: 20px; }
+    .main-title { font-size: 28px; font-weight: bold; color: #0F172A; }
+    .sub-title { font-size: 16px; color: #475569; margin-bottom: 20px; }
     .agent-log { 
         background-color: #0F172A; 
         color: #38BDF8; 
@@ -73,6 +72,19 @@ def auditar_pliego_licitacion(num_clausulas: int, umbral_riesgo_tecnico: int) ->
     
     criticos = df[df["Estatus_Cumplimiento"] == "BRECHA_NORMATIVA_CRITICA"]
     
+    # Guardar métricas reales en sesión para el gráfico ejecutivo
+    riesgo_por_disciplina = (
+        criticos.groupby("Disciplina_Norma")["Monto_Partida_USD"]
+        .sum()
+        .reset_index()
+        .sort_values(by="Monto_Partida_USD", ascending=False)
+    )
+    st.session_state["riesgo_disciplina"] = riesgo_por_disciplina
+    st.session_state["tabla_criticos"] = criticos[["Clausula_ID", "Disciplina_Norma", "Indice_Riesgo", "Monto_Partida_USD"]]
+    st.session_state["total_riesgo_usd"] = round(float(criticos["Monto_Partida_USD"].sum()), 2)
+    st.session_state["total_criticos"] = int(len(criticos))
+    st.session_state["total_auditadas"] = int(num_clausulas)
+    
     return {
         "total_clausulas_auditadas": int(num_clausulas),
         "brechas_criticas_detectadas": int(len(criticos)),
@@ -96,7 +108,6 @@ def generar_solicitud_aclaratoria_tecnica(clausula_id: str, norma_afectada: str)
         "mensaje": f"Se ha emitido alerta al Comité de Licitaciones y generado borrador de aclaratoria técnica (RFI) para la cláusula {clausula_id} ({norma_afectada})."
     }
 
-# Mapeador de funciones disponibles para el agente
 herramientas_disponibles = {
     "auditar_pliego_licitacion": auditar_pliego_licitacion,
     "generar_solicitud_aclaratoria_tecnica": generar_solicitud_aclaratoria_tecnica
@@ -125,7 +136,6 @@ if run_agent:
     else:
         with st.spinner("🤖 Agente razonando, cruzando normativas API/ASME y ejecutando herramientas..."):
             try:
-                # Usa st.secrets["GEMINI_API_KEY"] en producción para mayor seguridad
                 api_key = os.environ.get("GEMINI_API_KEY", "TU_API_KEY_AQUI")
                 client = genai.Client(api_key=api_key)
                 
@@ -141,7 +151,7 @@ if run_agent:
                     temperature=0.2
                 )
                 
-                # Sistema de respaldo automático anti-saturación (503) para demos en vivo
+                # Sistema de respaldo automático anti-saturación para demos en vivo
                 modelos_respaldo = ["gemini-3.8-flash", "gemini-4-hydrogen", "gemini-3.5-flash-lite"]
                 chat = None
                 response = None
@@ -150,14 +160,15 @@ if run_agent:
                     try:
                         chat = client.chats.create(model=modelo, config=config)
                         response = chat.send_message(prompt_usuario)
-                        break  # Si responde bien, sale del bucle y sigue normal
+                        break
                     except Exception as err_modelo:
-                        if "503" in str(err_modelo) or "UNAVAILABLE" in str(err_modelo):
-                            continue  # Prueba inmediatamente el siguiente modelo
+                        err_str = str(err_modelo)
+                        if any(code in err_str for code in ["503", "404", "429", "UNAVAILABLE", "NOT_FOUND"]):
+                            continue
                         raise err_modelo
                 
                 if response is None:
-                    raise Exception("Todos los servidores de respaldo están temporalmente ocupados. Intenta en unos segundos.")
+                    raise Exception("Los servidores de respaldo están temporalmente ocupados. Intenta nuevamente en unos segundos.")
                 
                 log_logs = []
                 
@@ -183,25 +194,13 @@ if run_agent:
                             )
                         )
                 
-                # Mostrar métricas visuales rápidas antes del dictamen (Mejora mucho el video)
+                # 1. KPIs Reales Dinámicos
                 col1, col2, col3 = st.columns(3)
-                col1.metric("Cláusulas Auditadas", "120 Ítems", "100% Pliego Procesado")
-                col2.metric("Brechas Normativas", "32 Alertas", "ASME / API", delta_color="inverse")
-                col3.metric("Presupuesto en Riesgo", "$2,415,890 USD", "Requiere RFI", delta_color="inverse")
-                
-                st.markdown("---")
-                
-                # Mostrar traza técnica del bucle
-                st.markdown("### ⚡ Traza de Ejecución Autónoma (Agentic Loop)")
-                for log in log_logs:
-                    st.markdown(f'<div class="agent-log">{log}</div>', unsafe_allow_html=True)
-                    
-                st.markdown("---")
-                st.markdown("### 📋 Dictamen Ejecutivo de Viabilidad Técnica")
-                st.markdown(response.text)
-                
-            except Exception as e:
-                st.error(f"❌ Error durante la ejecución del agente: {e}")
-else:
-    st.info("👈 Haz clic en **'Ejecutar Auditoría Agéntica'** en el panel izquierdo para iniciar el análisis autónomo del pliego.")
-                
+                col1.metric("Cláusulas Auditadas", f"{st.session_state.get('total_auditadas', 120)} Ítems", "100% Pliego Procesado")
+                col2.metric("Brechas Críticas", f"{st.session_state.get('total_criticos', 0)} Hallazgos", "Sobre umbral de riesgo", delta_color="inverse")
+                col3.metric("Capital Expuesto a Penalidad", f"${st.session_state.get('total_riesgo_usd', 0):,.2f} USD", "Riesgo Contractual", delta_color="inverse")
+
+                st.divider()
+
+                # 2. Gráfico Gerencial de Exposición Financiera + Tabla Crítica
+                if "riesgo_disciplina" in st.session_state and not st.session_state["riesgo_disciplina"].empty:
